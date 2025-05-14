@@ -1,0 +1,9 @@
+You want to:
+
+Parse the descriptor
+
+Decode the xprv
+
+Derive child private keys (m/84'/0'/0'/0/i)
+
+(Optional): Generate Bitcoin addresses (Bech32 for wpkh, Base58 for pkh)
