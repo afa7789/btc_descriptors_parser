@@ -48,10 +48,6 @@ typedef struct {
     size_t length;
 } DerivationPath;
 
-// Base58 encoding/decoding functions
-int base58_decode(const char *input, uint8_t *output, size_t *output_len);
-int base58_encode(const uint8_t *data, size_t data_len, char *result, size_t result_size);
-
 // Descriptor parsing functions
 bool parse_descriptor_type(const char *desc, AddressType *addr_type);
 DescriptorComponents extract_descriptor_components(const char *desc);
@@ -69,7 +65,7 @@ int decode_extended_key(const char *encoded, ExtendedKey *key);
 void print_extended_key_info(const ExtendedKey *key);
 int get_pubkey_fingerprint(const uint8_t *pubkey, size_t pubkey_len, 
                             uint8_t fingerprint[4]);
-int privkey_to_pubkey(const uint8_t *privkey, uint8_t *pubkey);
+int private_key_to_public_key(const uint8_t *private_key, uint8_t *public_key_out, bool compressed, size_t *public_key_len_out);
 int derive_child_key(const ExtendedKey *parent, uint32_t index,
                     ExtendedKey *child);
 int derive_path(const ExtendedKey *master, const DerivationPath *path,
@@ -108,5 +104,9 @@ int process_descriptor(const char *desc, uint32_t index, char *address,
                         size_t address_size);
 
 bool is_segment_hardened(const char *segment);
+
+int privkey_to_wif(const uint8_t *privkey, bool compressed, char *wif, size_t wif_size);
+
+int pubkey_to_p2pkh_address(const uint8_t *pubkey, size_t pubkey_len, char *address, size_t address_size);
 
 #endif /* DESCRIPTORS_H */
