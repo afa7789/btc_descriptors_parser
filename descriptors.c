@@ -27,11 +27,24 @@ static const char *b58_alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkm
 #define MAINNET_P2SH 0x05 // Address version for P2SH
 
 // Function to calculate SHA256 hash
+/**
+ * @brief Calculate SHA256 hash
+ * @param data Input data
+ * @param data_len Length of input data
+ * @param output Output buffer for the hash (32 bytes)
+ */
 static void sha256(const uint8_t *data, size_t data_len, uint8_t *output) {
     SHA256(data, data_len, output);
 }
 
 // Function to calculate RIPEMD160 hash
+/**
+ * @brief Calculate RIPEMD160 hash
+ * @param data Input data
+ * @param data_len Length of input data
+ * @param output Output buffer for the hash (20 bytes)
+ * @return 1 on success, 0 on failure
+ */
 static int ripemd160(const uint8_t *data, size_t data_len, uint8_t *output) {
     RIPEMD160_CTX ctx;
     if (!RIPEMD160_Init(&ctx)) return 0;
@@ -41,6 +54,13 @@ static int ripemd160(const uint8_t *data, size_t data_len, uint8_t *output) {
 }
 
 // Function to calculate HASH160 (SHA256 then RIPEMD160)
+/**
+ * @brief Calculate HASH160 (SHA256 followed by RIPEMD160)
+ * @param data Input data
+ * @param data_len Length of input data
+ * @param output Output buffer for the hash (20 bytes)
+ * @return 1 on success, 0 on failure
+ */
 static int hash160(const uint8_t *data, size_t data_len, uint8_t output[RIPEMD160_DIGEST_LENGTH]) {
     uint8_t sha256_hash[SHA256_DIGEST_LENGTH];
     sha256(data, data_len, sha256_hash);
@@ -48,6 +68,14 @@ static int hash160(const uint8_t *data, size_t data_len, uint8_t output[RIPEMD16
 }
 
 // Base58 encoding (without checksum)
+/**
+ * @brief Encode data to Base58
+ * @param input Input data
+ * @param input_len Length of input data
+ * @param output Output buffer for Base58 string
+ * @param output_size Size of output buffer
+ * @return 1 on success, 0 on failure
+ */
 static int base58_encode(const uint8_t *input, size_t input_len, char *output, size_t output_size) {
     if (input_len == 0) {
         output[0] = '\0';
@@ -92,6 +120,14 @@ static int base58_encode(const uint8_t *input, size_t input_len, char *output, s
 }
 
 // Base58Check encoding
+/**
+ * @brief Encode data to Base58Check format
+ * @param input Input data
+ * @param input_len Length of input data
+ * @param output Output buffer for Base58Check string
+ * @param output_size Size of output buffer
+ * @return 1 on success, 0 on failure
+ */
 int base58_encode_check(const uint8_t *input, size_t input_len, char *output, size_t output_size) {
     uint8_t hash[SHA256_DIGEST_LENGTH];
     uint8_t hash2[SHA256_DIGEST_LENGTH];
@@ -108,6 +144,13 @@ int base58_encode_check(const uint8_t *input, size_t input_len, char *output, si
 }
 
 // Base58 decoding (without checksum)
+/**
+ * @brief Decode Base58 string to binary data
+ * @param input Base58 string
+ * @param output Output buffer for decoded data
+ * @param output_len Length of output data
+ * @return 1 on success, 0 on failure
+ */
 static int base58_decode(const char *input, uint8_t *output, size_t *output_len) {
     size_t input_len = strlen(input);
     size_t bin_size = (input_len * 733 / 1000) + 1; // Approx 733 bytes per 1000 chars + 1 for safety
@@ -149,6 +192,13 @@ static int base58_decode(const char *input, uint8_t *output, size_t *output_len)
 
 
 // Base58Check decoding
+/**
+ * @brief Decode Base58Check string to binary data
+ * @param input Base58Check string
+ * @param output Output buffer for decoded data
+ * @param output_size Size of output buffer
+ * @return Length of decoded data on success, 0 on failure
+ */
 int base58_decode_check(const char *input, uint8_t *output, size_t output_size) {
     uint8_t decoded_data[output_size + 4]; // Max size needed for decoded data + checksum
     size_t decoded_len;
@@ -184,6 +234,12 @@ int base58_decode_check(const char *input, uint8_t *output, size_t output_size) 
 
 
 // Function to deserialize an extended key (xprv or xpub)
+/**
+ * @brief Deserialize an extended key from Base58Check format
+ * @param key_str Base58Check encoded extended key string
+ * @param key Output ExtendedKey structure
+ * @return 1 on success, 0 on failure
+ */
 int hd_deserialize(const char *key_str, ExtendedKey *key) {
     uint8_t data[78 + 4]; // 78 bytes for key data + 4 bytes for checksum
     int decoded_len = base58_decode_check(key_str, data, sizeof(data));
@@ -226,6 +282,13 @@ int hd_deserialize(const char *key_str, ExtendedKey *key) {
 }
 
 // Function to derive a child extended key
+/**
+ * @brief Derive a child extended key from a parent extended key
+ * @param parent Parent extended key
+ * @param child Output child extended key
+ * @param index Child index (hardened if index >= 0x80000000)
+ * @return 1 on success, 0 on failure
+ */
 int hd_derive_child(ExtendedKey *parent, ExtendedKey *child, uint32_t index) {
     if (!parent->is_private && (index & HARDENED_BIT)) {
         printf("Error: Cannot derive hardened child from public parent.\n");
@@ -445,6 +508,10 @@ int hd_derive_child(ExtendedKey *parent, ExtendedKey *child, uint32_t index) {
 }
 
 // Function to print extended key information
+/**
+ * @brief Print extended key information
+ * @param key Extended key to print
+ */
 void print_extended_key(const ExtendedKey *key) {
     if (!key) return;
 
@@ -466,6 +533,10 @@ void print_extended_key(const ExtendedKey *key) {
 }
 
 // Function to print private key information (including WIF and derived public key)
+/**
+ * @brief Print private key information
+ * @param key Extended key to print
+ */
 void print_private_key_info(const ExtendedKey *key) {
     if (!key || !key->is_private) {
         printf("No private key available\n\n");
@@ -537,6 +608,14 @@ int privkey_to_wif(const uint8_t *privkey, bool compressed, char *wif, size_t wi
 
 // Function to convert public key to P2PKH address
 // Now takes pubkey_len to handle both compressed (33 bytes) and uncompressed (65 bytes)
+/**
+ * @brief Convert public key to P2PKH address (Base58Check)
+ * @param pubkey Public key (compressed or uncompressed)
+ * @param pubkey_len Length of the public key
+ * @param address Output buffer for P2PKH address
+ * @param address_size Size of output buffer
+ * @return 1 on success, 0 on failure
+ */
 int pubkey_to_p2pkh_address(const uint8_t *pubkey, size_t pubkey_len, char *address, size_t address_size) {
     uint8_t pubkey_hash[RIPEMD160_DIGEST_LENGTH]; // 20 bytes
     if (!hash160(pubkey, pubkey_len, pubkey_hash)) return 0; // Use pubkey_len
@@ -549,6 +628,13 @@ int pubkey_to_p2pkh_address(const uint8_t *pubkey, size_t pubkey_len, char *addr
 }
 
 // Function to convert public key to P2WPKH address (Bech32)
+/**
+ * @brief Convert public key to P2WPKH address (Bech32)
+ * @param pubkey Public key (compressed)
+ * @param address Output buffer for P2WPKH address
+ * @param address_size Size of output buffer
+ * @return 1 on success, 0 on failure
+ */
 int pubkey_to_p2wpkh_address(const uint8_t *pubkey, char *address, size_t address_size) {
     uint8_t pubkey_hash[RIPEMD160_DIGEST_LENGTH]; // 20 bytes
     if (!hash160(pubkey, 33, pubkey_hash)) return 0; // Always uses compressed pubkey (33 bytes) for P2WPKH
@@ -574,6 +660,13 @@ int pubkey_to_p2wpkh_address(const uint8_t *pubkey, char *address, size_t addres
 }
 
 // Function to convert public key to P2SH-P2WPKH address (Base58Check)
+/**
+ * @brief Convert public key to P2SH-P2WPKH address (Base58Check)
+ * @param pubkey Public key (compressed)
+ * @param address Output buffer for P2SH-P2WPKH address
+ * @param address_size Size of output buffer
+ * @return 1 on success, 0 on failure
+ */
 int pubkey_to_p2sh_p2wpkh_address(const uint8_t *pubkey, char *address, size_t address_size) {
     uint8_t pubkey_hash[RIPEMD160_DIGEST_LENGTH]; // 20 bytes
     if (!hash160(pubkey, 33, pubkey_hash)) return 0; // Always uses compressed pubkey (33 bytes) for P2SH-P2WPKH
@@ -595,6 +688,13 @@ int pubkey_to_p2sh_p2wpkh_address(const uint8_t *pubkey, char *address, size_t a
 }
 
 // Function to convert public key to P2TR address (Bech32m)
+/**
+ * @brief Convert public key to P2TR address (Bech32m)
+ * @param pubkey Public key (compressed)
+ * @param address Output buffer for P2TR address
+ * @param address_size Size of output buffer
+ * @return 1 on success, 0 on failure
+ */
 int pubkey_to_p2tr_address(const uint8_t *pubkey, char *address, size_t address_size) {
     // For P2TR, the witness program is the 32-byte x-only public key
     // You need to extract the x-only public key from the compressed pubkey (33 bytes)
@@ -633,10 +733,14 @@ int pubkey_to_p2tr_address(const uint8_t *pubkey, char *address, size_t address_
 }
 
 // Function to convert private key (32 bytes) to public key (33 or 65 bytes)
-// @param private_key Input 32-byte private key
-// @param public_key_out Output buffer for public key (33 bytes for compressed, 65 for uncompressed)
-// @param compressed If true, output compressed (33 bytes), else uncompressed (65 bytes)
-// @param public_key_len_out Optional: If not NULL, returns the actual length of the public key generated
+/**
+ * @brief Convert private key to public key
+ * @param private_key Input 32-byte private key
+ * @param public_key_out Output buffer for public key (33 bytes for compressed, 65 for uncompressed)
+ * @param compressed If true, output compressed (33 bytes), else uncompressed (65 bytes)
+ * @param public_key_len_out Optional: If not NULL, returns the actual length of the public key generated
+ * @return 1 on success, 0 on failure
+ */
 int private_key_to_public_key(const uint8_t *private_key, uint8_t *public_key_out, bool compressed, size_t *public_key_len_out) {
     EC_KEY *eckey = EC_KEY_new_by_curve_name(NID_secp256k1);
     if (!eckey) {
@@ -695,6 +799,13 @@ int private_key_to_public_key(const uint8_t *private_key, uint8_t *public_key_ou
 }
 
 // Function to decode WIF private key
+/**
+ * @brief Decode WIF private key to raw private key
+ * @param wif_str Input WIF string
+ * @param private_key_out Output buffer for raw private key (32 bytes)
+ * @param compressed_out Output flag for compressed key (true if compressed, false if uncompressed)
+ * @return 1 on success, 0 on failure
+ */
 int wif_to_private_key(const char *wif_str, uint8_t *private_key_out, bool *compressed_out) {
     uint8_t decoded_data[38]; // Max for 0x80 + 32-byte key + 0x01 (if compressed) + 4-byte checksum
     int decoded_len = base58_decode_check(wif_str, decoded_data, sizeof(decoded_data));
@@ -724,6 +835,14 @@ int wif_to_private_key(const char *wif_str, uint8_t *private_key_out, bool *comp
 
 
 // Function to generate address from extended key
+/**
+ * @brief Generate address from extended key
+ * @param key Extended key to derive address from
+ * @param type Address type (P2PKH, P2WPKH, etc.)
+ * @param address Output buffer for the generated address
+ * @param address_size Size of the output buffer
+ * @return 1 on success, 0 on failure
+ */
 int extended_key_to_address(const ExtendedKey *key, AddressType type, char *address, size_t address_size) {
     uint8_t pubkey_compressed[33]; // Always derive compressed for these types if from extended key
     uint8_t pubkey_uncompressed[65]; // For P2PKH if needed
@@ -758,6 +877,12 @@ int extended_key_to_address(const ExtendedKey *key, AddressType type, char *addr
 }
 
 // Function to parse a derivation path segment (e.g., "0h", "1")
+/**
+ * @brief Parse a derivation path segment
+ * @param segment Input segment (e.g., "0h", "1")
+ * @param index_val Output index value (parsed)
+ * @return 1 on success, 0 on failure
+ */
 static int parse_path_segment(const char *segment, uint32_t *index_val) {
     if (!segment) return 0;
     bool hardened = false;
@@ -781,12 +906,26 @@ static int parse_path_segment(const char *segment, uint32_t *index_val) {
 }
 
 // Function to check if a segment is hardened
+/**
+ * @brief Check if a segment is hardened (ends with 'h' or '\'')
+ * @param segment Input segment (e.g., "0h", "1")
+ * @return 1 if hardened, 0 otherwise
+ */
 bool is_segment_hardened(const char *segment) {
     size_t len = strlen(segment);
     return (len > 0 && (segment[len - 1] == '\'' || segment[len - 1] == 'h'));
 }
 
 // Function to generate address from descriptor components
+/**
+ * @brief Generate address from descriptor components
+ * @param comp Descriptor components (parsed)
+ * @param addr_type Address type (P2PKH, P2WPKH, etc.)
+ * @param index_wildcard Wildcard index for address generation
+ * @param address Output buffer for the generated address
+ * @param address_size Size of the output buffer
+ * @return 1 on success, 0 on failure
+ */
 int generate_address_from_descriptor(const DescriptorComponents *comp, AddressType addr_type, uint32_t index_wildcard, char *address, size_t address_size) {
     ExtendedKey master_key;
 
@@ -871,6 +1010,16 @@ int generate_address_from_descriptor(const DescriptorComponents *comp, AddressTy
 
 
 // Function to generate a range of addresses
+/**
+ * @brief Generate a range of addresses from a descriptor
+ * @param comp Descriptor components (parsed)
+ * @param addr_type Address type (P2PKH, P2WPKH, etc.)
+ * @param start_index Starting index for wildcard address generation
+ * @param count Number of addresses to generate
+ * @param callback Callback function to handle each generated address
+ * @param user_data User data to pass to the callback
+ * @return 1 on success, 0 on failure
+ */
 int generate_address_range(const DescriptorComponents *comp, AddressType addr_type, uint32_t start_index, uint32_t count, void (*callback)(const char *address, uint32_t index, void *user_data), void *user_data) {
     char address[MAX_ADDRESS_SIZE];
     int success = 1;
@@ -889,6 +1038,10 @@ int generate_address_range(const DescriptorComponents *comp, AddressType addr_ty
 }
 
 // Function to free descriptor components
+/**
+ * @brief Free memory allocated for descriptor components
+ * @param comp Descriptor components to free
+ */
 void free_descriptor_components(DescriptorComponents *comp) {
     if (comp) {
         free(comp->xprv_or_xpub);
@@ -902,6 +1055,14 @@ void free_descriptor_components(DescriptorComponents *comp) {
 }
 
 // Function to process a single descriptor string
+/**
+ * @brief Process a single descriptor string and generate an address
+ * @param desc_str Descriptor string (e.g., "pkh(xpub...)")
+ * @param index Index for wildcard address generation
+ * @param address Output buffer for the generated address
+ * @param address_size Size of the output buffer
+ * @return 1 on success, 0 on failure
+ */
 int process_descriptor(const char *desc_str, uint32_t index, char *address, size_t address_size) {
     DescriptorComponents comp = {0}; // Initialize to zero
 
