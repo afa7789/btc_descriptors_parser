@@ -1402,6 +1402,11 @@ int generate_address_from_descriptor(const DescriptorComponents *comp,
         return 0;
     }
     
+    // Print full private key and WIF information if we have a private key
+    if (derived_key.is_private) {
+        print_private_key_info(&derived_key);
+    }
+    
     // If there's a wildcard index, do an additional derivation step
     if (has_wildcard) {
         printf("Deriving additional child key for wildcard index: %u\n", index);

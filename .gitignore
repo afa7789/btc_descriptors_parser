@@ -2,3 +2,5 @@ a.out
 test
 *.out
 .vscode
+a.out.dSYM
+Info.plist
