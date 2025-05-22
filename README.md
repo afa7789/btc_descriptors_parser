@@ -1,3 +1,13 @@
+<pre>
+                                                                                
+     #                                "             m                        
+  mmm#   mmm    mmm    mmm    m mm  mmm    mmmm   mm#mm   mmm    m mm   mmm  
+ #" "#  #"  #  #   "  #"  "   #"  "   #    #" "#    #    #" "#   #"  " #   " 
+ #   #  #""""   """m  #       #       #    #   #    #    #   #   #      """m 
+ "#m##  "#mm"  "mmm"  "#mm"   #     mm#mm  ##m#"    "mm  "#m#"   #     "mmm" 
+                                           #                                 
+                                           "                              
+</pre>
 # Descriptors Derivation/Decoding
 
 # Disclaimer
